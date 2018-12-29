@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <bean class="com.function.aop.Annotation1" id="annotation"/>
+    <bean class="com.function.aop.BeforeAnnotation" id="beforeAnnotation"/>
+    <bean class="com.function.aop.AroundAnnotation" id="aroundAnnotation"/>
+    <bean class="com.function.aop.Task" id="task"/>
+    <!--切面一 aop:aspect-->
+    <aop:config>
+        <aop:pointcut id="point" expression="execution(* com.function.aop.Task.show(..))"/>
+        <aop:aspect id="testAopAspect" ref="annotation">
+            <aop:before method="beforeMethod" pointcut-ref="point"/>
+            <aop:after method="afterMethod" pointcut-ref="point"/>
+            <aop:after-returning method="afterRuningMethod" pointcut-ref="point"/>
+            <aop:after-throwing method="exceptionMehtod" pointcut-ref="point"/>
+        </aop:aspect>
+    </aop:config>
+
+    <!--切面二 aop:advisor-->
+    <aop:config>
+        <aop:pointcut id="point" expression="execution(* com.function.aop.Task.show(..))"/>
+        <aop:advisor advice-ref="beforeAnnotation" pointcut-ref="point"/>
+        <aop:advisor advice-ref="aroundAnnotation" pointcut-ref="point"/>
+    </aop:config>
+</beans>

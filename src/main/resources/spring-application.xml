@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/mvc
+           http://www.springframework.org/schema/mvc/spring-mvc.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/task
+           http://www.springframework.org/schema/task/spring-task.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--spring定时器-->
+    <task:annotation-driven/>
+    <bean class="com.function.timmer.JobImpl"/>
+
+    <!--包扫描-->
+    <context:component-scan base-package="com" use-default-filters="true">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+          destroy-method="stop">
+        <property name="connectionFactory">
+            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+                <property name="brokerURL">
+                    <value>tcp://localhost:61616</value>
+                </property>
+            </bean>
+        </property>
+        <property name="maxConnections" value="100"></property>
+    </bean>
+
+    <!--mmg数据源-->
+    <bean id ="mmgDataSource" class= "com.mchange.v2.c3p0.ComboPooledDataSource" >
+        <!--驱动类名 -->
+        <property name="driverClass" value="com.mysql.jdbc.Driver" />
+        <!-- url -->
+        <property name="jdbcUrl" value="jdbc:mysql://10.7.13.231:3306/mmg" />
+        <!-- 用户名 -->
+        <property name="user" value="root" />
+        <!-- 密码 -->
+        <property name="password" value="root" />
+        <!-- 当连接池中的连接耗尽的时候c3p0一次同时获取的连接数  -->
+        <property name="acquireIncrement" value="5"></property>
+        <!-- 初始连接池大小 -->
+        <property name="initialPoolSize" value="10"></property>
+        <!-- 连接池中连接最小个数 -->
+        <property name="minPoolSize" value="5"></property>
+        <!-- 连接池中连接最大个数 -->
+        <property name="maxPoolSize" value="20"></property>
+    </bean >
+
+    <!--jeecmsv5数据源-->
+    <bean id ="jeecmsv5DataSource" class= "com.mchange.v2.c3p0.ComboPooledDataSource" >
+        <!--驱动类名 -->
+        <property name="driverClass" value="com.mysql.jdbc.Driver" />
+        <!-- url -->
+        <property name="jdbcUrl" value="jdbc:mysql://10.7.13.231:3306/jeecmsv5" />
+        <!-- 用户名 -->
+        <property name="user" value="root" />
+        <!-- 密码 -->
+        <property name="password" value="root" />
+        <!-- 当连接池中的连接耗尽的时候c3p0一次同时获取的连接数  -->
+        <property name="acquireIncrement" value="5"></property>
+        <!-- 初始连接池大小 -->
+        <property name="initialPoolSize" value="10"></property>
+        <!-- 连接池中连接最小个数 -->
+        <property name="minPoolSize" value="5"></property>
+        <!-- 连接池中连接最大个数 -->
+        <property name="maxPoolSize" value="20"></property>
+    </bean >
+
+
+    <bean id="mmgSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 数据源 -->
+        <property name="dataSource" ref="mmgDataSource"></property>
+        <!-- 别名 -->
+        <property name="typeAliasesPackage" value="com.zhangguo.bookstore.entities"></property>
+        <!-- sql映射文件路径 -->
+        <property name="mapperLocations" value="classpath*:mmgmybatis/*.xml"></property>
+    </bean>
+
+    <bean id="jeecmsv5SqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 数据源 -->
+        <property name="dataSource" ref="jeecmsv5DataSource"></property>
+        <!-- 别名 -->
+        <property name="typeAliasesPackage" value="com.zhangguo.bookstore.entities"></property>
+        <!-- sql映射文件路径 -->
+        <property name="mapperLocations" value="classpath*:jeecmsv5mybatis/*.xml"></property>
+    </bean>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--指定会话工厂，如果当前上下文中只定义了一个则该属性可省去 -->
+        <property name="sqlSessionFactoryBeanName" value="mmgSqlSessionFactory"></property>
+        <!-- 指定要自动扫描接口的基础包，实现接口 -->
+        <property name="basePackage" value="com.dao.mmgdao"></property>
+    </bean>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--指定会话工厂，如果当前上下文中只定义了一个则该属性可省去 -->
+        <property name="sqlSessionFactoryBeanName" value="jeecmsv5SqlSessionFactory"></property>
+        <!-- 指定要自动扫描接口的基础包，实现接口 -->
+        <property name="basePackage" value="com.dao.jeecmsv5dao"></property>
+    </bean>
+
+
+
+    <bean id="mmgTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="mmgDataSource"></property>
+    </bean>
+    <bean id="jeecmsv5TransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="jeecmsv5DataSource"></property>
+    </bean>
+
+    <tx:annotation-driven
+    <!-- 配置注解式事务生效 -->
+    <tx:annotation-driven transaction-manager="mmgTransactionManager"/>
+    <!-- 配置注解式事务生效 -->
+    <tx:annotation-driven transaction-manager="jeecmsv5TransactionManager"/>
+
+
+
+    <!--使用缓存可以提升效率-->
+    <bean id="cachingConnectionFactory" class="org.springframework.jms.connection.CachingConnectionFactory">
+        <property name="targetConnectionFactory" ref="jmsFactory"/>
+        <property name="sessionCacheSize" value="1"/>
+    </bean>
+
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="cachingConnectionFactory"/>
+        <property name="messageConverter">
+            <bean class="org.springframework.jms.support.converter.SimpleMessageConverter"/>
+        </property>
+    </bean>
+    <!--引入外部配置文件-->
+    <!--创建数据源-->
+    <!--创建sqlSessionFactory-->
+        <!--分页插件pagehelper-->
+    <!--创建dao MapperScannerConfigurer-->
+    <!--创建事务管理器 DataSourceTransactionManager-->
+    <!--开启注解式事务生效-->
+    <tx:annotation-driven/>
+
+
+</beans>
