@@ -36,6 +36,6 @@ public class TestPOI {
         }
         HSSFWorkbook workbook = new HSSFWorkbook();
         POIUtil.setMap(map);
-        POIUtil.exportExcel(workbook,peoples,title,People.class,response);
+        //POIUtil.exportExcel(workbook,peoples,title,People.class,response);
     }
 }

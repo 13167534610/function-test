@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -48,6 +49,14 @@ public class ParamsTest {
             System.out.println(name);
         }
         return "YES";
+    }
+
+    @ResponseBody
+    @RequestMapping("/test3.htm")
+    public HashMap<String,String> test3(){
+        HashMap<String, String> map = new HashMap<String,String>();
+        map.put("testuser" , "wq");
+        return map;
     }
 
 

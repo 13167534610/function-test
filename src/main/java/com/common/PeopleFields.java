@@ -1,5 +1,8 @@
 package com.common;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * description:people类中属性的枚举
  *
@@ -13,5 +16,11 @@ public enum PeopleFields {
     }
     public String getValue(){
         return value;
+    }
+
+    public Map<String,String> getFieldsMap(){
+        Map<String, String> map = new HashMap<String, String>();
+        PeopleFields[] values = PeopleFields.values();
+        return map;
     }
 }

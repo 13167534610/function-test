@@ -1,20 +1,22 @@
 package com.function.poi;
 
+import com.common.PeopleFields;
+import com.entity.People;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URLEncoder;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 本工具类是一个通用的Excel导出工具类
@@ -48,7 +50,7 @@ public class POIUtil {
      * @param clazz：对象类型
      * @param response：响应对象
      */
-    public static void exportExcel(Workbook workbook, List objs, String title, Class clazz, HttpServletResponse response){
+    public static void exportExcel(Workbook workbook, List objs, String title, Class clazz, HttpServletResponse response, String filePath){
         OutputStream output = null;
         try {
             if (StringUtils.isEmpty(title))
@@ -99,10 +101,14 @@ public class POIUtil {
                     judgeAndSetValue(workbook, value, dataCell);
                 }
             }
-            output = response.getOutputStream();
-            response.reset();
-            response.setHeader("Content-disposition", "attachment; filename="+ URLEncoder.encode(title+".xls","UTF-8"));
-            response.setContentType("application/msexcel");
+            if (response != null){
+                output = response.getOutputStream();
+                response.reset();
+                response.setHeader("Content-disposition", "attachment; filename=" + URLEncoder.encode(title+".xls","UTF-8"));
+                response.setContentType("application/msexcel");
+            }else {
+                output = new FileOutputStream(filePath + title + ".xls");
+            }
             workbook.write(output);
         }catch (Exception e){
             e.printStackTrace();
@@ -140,7 +146,7 @@ public class POIUtil {
      * @param value：通过get方法获取的值
      * @param dataCell：数据单元格
      */
-    public static void judgeAndSetValue(Workbook workbook, Object value, Cell dataCell){
+    private static void judgeAndSetValue(Workbook workbook, Object value, Cell dataCell){
         DataFormat df = workbook.createDataFormat();//数据格式对象
         if (value instanceof Integer){//整数类型
             CellStyle cellStyle = getCellStyle(workbook, FONTSIZE_2);
@@ -195,5 +201,28 @@ public class POIUtil {
      */
     private static String getValue(String key){
         return map.get(key);
+    }
+
+    /**
+     * 测试
+     * @param args
+     */
+    public static void main(String[] args) {
+        List<People> peoples=new ArrayList<People>();
+        peoples.add(new People(1,"LF",23,new Date(),11D));
+        peoples.add(new People(2,"WYH",22,new Date(),12.00));
+        peoples.add(new People(3,"WQ",25,new Date(),13.4));
+        People people = new People();
+        people.setId(4);
+        people.setName("HSSF");
+        peoples.add(people);
+        HashMap<String, String> map = new HashMap<String, String>();
+        PeopleFields[] fields = PeopleFields.values();
+        for (PeopleFields field : fields) {
+            map.put(field.name(),field.getValue());
+        }
+        HSSFWorkbook workbook = new HSSFWorkbook();
+        POIUtil.setMap(map);
+        POIUtil.exportExcel(workbook,peoples,"非浏览器测试",People.class, null, "D:/");
     }
 }
